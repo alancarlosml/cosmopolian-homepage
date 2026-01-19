@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | Cosmopolian</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <!-- Login Section -->
+    <div id="login-section" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
+        <div class="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-2xl">
+            <div class="text-center mb-10">
+                <div
+                    class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-600/30">
+                    <i class="fas fa-lock text-white text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-black mb-2">Acesso Admin</h1>
+                <p class="text-slate-400">Entre com suas credenciais</p>
+            </div>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Usuário</label>
+                    <input type="text" id="username" required
+                        class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 transition-all outline-none"
+                        placeholder="admin">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-300 mb-2">Senha</label>
+                    <input type="password" id="password" required
+                        class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 transition-all outline-none"
+                        placeholder="••••••••">
+                </div>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/20 transition-all transform hover:-translate-y-1">
+                    Entrar no Painel
+                </button>
+            </form>
+            <div id="setup-message"
+                class="mt-6 text-center text-sm text-slate-500 hidden cursor-pointer hover:text-indigo-400">
+                Primeiro acesso? Clique aqui para configurar.
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="hidden">
+        <header class="border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-brain text-white text-xs"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">Cosmopolian <span
+                            class="text-indigo-400">Admin</span></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <span id="user-display" class="text-sm font-medium text-slate-400">Admin</span>
+                    <button id="logout-btn"
+                        class="text-sm font-bold bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition-all">
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-12">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-4xl font-black mb-2">Contatos Recebidos</h2>
+                    <p class="text-slate-400">Gerencie os leads submetidos pelo formulário.</p>
+                </div>
+                <button id="refresh-btn"
+                    class="p-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-xl transition-all border border-indigo-600/20">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
+            <div class="glass rounded-[2rem] overflow-hidden shadow-2xl border border-white/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-white/5 border-b border-white/10">
+                                <th class="px-8 py-6 font-bold text-sm uppercase tracking-wider text-slate-400">Data
+                                </th>
+                                <th class="px-8 py-6 font-bold text-sm uppercase tracking-wider text-slate-400">Nome
+                                </th>
+                                <th class="px-8 py-6 font-bold text-sm uppercase tracking-wider text-slate-400">Contato
+                                </th>
+                                <th class="px-8 py-6 font-bold text-sm uppercase tracking-wider text-slate-400">Mensagem
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-table" class="divide-y divide-white/5">
+                            <!-- Contatos serão inseridos aqui -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="empty-state" class="hidden p-20 text-center">
+                    <i class="fas fa-inbox text-5xl text-slate-700 mb-4 block"></i>
+                    <p class="text-slate-500 font-medium">Nenhum contato encontrado no momento.</p>
+                </div>
+                <div id="loading-state" class="p-20 text-center">
+                    <div
+                        class="inline-block w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4">
+                    </div>
+                    <p class="text-slate-500">Carregando contatos...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000'; // Ajuste conforme necessário
+        let token = localStorage.getItem('admin_token');
+
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const loginForm = document.getElementById('login-form');
+        const contactsTable = document.getElementById('contacts-table');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const logoutBtn = document.getElementById('logout-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const setupMessage = document.getElementById('setup-message');
+
+        // Check auth on load
+        if (token) {
+            showDashboard();
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_URL}/token`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    localStorage.setItem('admin_token', token);
+                    showDashboard();
+                } else {
+                    alert('Credenciais inválidas. Verifique usuário e senha.');
+                    if (response.status === 401) setupMessage.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão com o servidor.');
+            }
+        });
+
+        setupMessage.addEventListener('click', async () => {
+            if (confirm('Deseja configurar o usuário padrão (admin / admin123)?')) {
+                try {
+                    const response = await fetch(`${API_URL}/setup-admin`, { method: 'POST' });
+                    if (response.ok) alert('Usuário admin criado com sucesso! Use admin / admin123');
+                    else alert('Já existe um usuário configurado ou erro no servidor.');
+                } catch (err) { alert('Erro ao configurar.'); }
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('admin_token');
+            location.reload();
+        });
+
+        refreshBtn.addEventListener('click', loadContacts);
+
+        function showDashboard() {
+            loginSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            loadContacts();
+        }
+
+        async function loadContacts() {
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            contactsTable.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/contacts/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const contacts = await response.json();
+                    loadingState.classList.add('hidden');
+
+                    if (contacts.length === 0) {
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
+
+                    contacts.forEach(contact => {
+                        const date = new Date(contact.created_at).toLocaleString('pt-BR');
+                        const row = `
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="px-8 py-6 text-sm text-slate-400 whitespace-nowrap">${date}</td>
+                                <td class="px-8 py-6 text-sm font-bold text-white">${contact.name}</td>
+                                <td class="px-8 py-6 text-sm">
+                                    <div class="font-medium text-slate-300">${contact.email}</div>
+                                    <div class="text-xs text-slate-500">${contact.company || '-'}</div>
+                                </td>
+                                <td class="px-8 py-6 text-sm text-slate-400 max-w-md">${contact.message}</td>
+                            </tr>
+                        `;
+                        contactsTable.innerHTML += row;
+                    });
+                } else if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    location.reload();
+                }
+            } catch (err) {
+                console.error(err);
+                loadingState.classList.add('hidden');
+                alert('Falha ao carregar contatos.');
+            }
+        }
+    </script>
+</body>
+
+</html>
