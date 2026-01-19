@@ -14,10 +14,8 @@ services:
       - db
 
   frontend:
-    image: nginx:alpine
+    build: ./frontend
     container_name: cosmopolian_frontend
-    volumes:
-      - ./index.html:/usr/share/nginx/html/index.html
     networks:
       - proxy_network
       - internal_network
