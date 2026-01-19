@@ -13,6 +13,15 @@ services:
     depends_on:
       - db
 
+  frontend:
+    image: nginx:alpine
+    container_name: cosmopolian_frontend
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+    networks:
+      - proxy_network
+      - internal_network
+
   db:
     image: postgres:15
     container_name: cosmopolian_db
