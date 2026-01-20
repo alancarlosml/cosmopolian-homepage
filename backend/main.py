@@ -27,6 +27,8 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Cosmopolian Contact API")
 
+app.include_router(contacts_router, prefix="/api")
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
