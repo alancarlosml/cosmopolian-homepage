@@ -92,7 +92,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Temporary endpoint to create first admin (should be removed or secured)
-@api_router.post("/setup-admin", response_model=schemas.UserResponse)
+@api_router.get("/setup-admin", response_model=schemas.UserResponse)
 def setup_admin(db: Session = Depends(get_db)):
     admin = db.query(models.User).filter(models.User.username == "admin").first()
     if admin:
