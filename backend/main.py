@@ -1,5 +1,4 @@
-import os
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
@@ -20,14 +19,12 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Cosmopolian Contact API")
-
-app.include_router(contacts_router, prefix="/api")
 
 # Configure CORS
 app.add_middleware(
@@ -74,8 +71,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise credentials_exception
     return user
 
+# Create a router for all API endpoints
+api_router = APIRouter()
+
 # Auth Endpoints
-@app.post("/token", response_model=schemas.Token)
+@api_router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -91,7 +91,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Temporary endpoint to create first admin (should be removed or secured)
-@app.post("/setup-admin", response_model=schemas.UserResponse)
+@api_router.post("/setup-admin", response_model=schemas.UserResponse)
 def setup_admin(db: Session = Depends(get_db)):
     admin = db.query(models.User).filter(models.User.username == "admin").first()
     if admin:
@@ -107,7 +107,7 @@ def setup_admin(db: Session = Depends(get_db)):
     return new_admin
 
 # Contact Endpoints
-@app.post("/contacts/", response_model=schemas.ContactResponse)
+@api_router.post("/contacts/", response_model=schemas.ContactResponse)
 def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)):
     db_contact = models.Contact(
         name=contact.name,
@@ -120,11 +120,19 @@ def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)
     db.refresh(db_contact)
     return db_contact
 
-@app.get("/contacts/", response_model=List[schemas.ContactResponse])
+@api_router.get("/contacts/", response_model=List[schemas.ContactResponse])
 def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     contacts = db.query(models.Contact).order_by(models.Contact.created_at.desc()).offset(skip).limit(limit).all()
     return contacts
 
-@app.get("/")
+# Define root on the main app or the router
+@api_router.get("/")
 def read_root():
     return {"message": "Welcome to Cosmopolian Contact API"}
+
+# Include the router with the /api prefix
+app.include_router(api_router, prefix="/api")
+
+@app.get("/")
+def main_root():
+    return {"message": "Cosmopolian API Root. Use /api for endpoints."}
